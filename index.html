@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE ESCAPE ROOM  </title>
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(90deg, #1a1a2e, #16213e);
+            color: white;
+        }
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.5);
+        }
+        h2{
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 60px;
+            text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.5);
+        }
+        canvas {
+            background-color: black;
+            display: block;
+            margin: auto;
+            border: 5px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .controls button {
+            width: 60px;
+            height: 60px;
+            font-size: 22px;
+            margin: 8px;
+            border: none;
+            border-radius: 50%;
+            background: #00ff00;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ff00;
+            transition: transform 0.2s;
+        }
+        .controls button:active {
+            transform: scale(0.9);
+        }
+        #score {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        #code {
+            display: none;
+            font-size: 2rem;
+            font-weight: bold;
+            color: yellow;
+            animation: blink 0.8s infinite alternate, bounce 1.5s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <h1>THE ESCAPE ROOM : FINAL ROUND  </h1>
+    <h2>Score 30 points, and get a reward!!</h2>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <h2 id="score">Score: 0</h2>
+    <h2 id="code">Secret Code: 906</h2>
+    
+    <div class="controls">
+        <button onclick="changeDirection('Up')">⬆️</button>
+    </div>
+    <div class="controls">
+        <button onclick="changeDirection('Left')">⬅️</button>
+        <button onclick="changeDirection('Down')">⬇️</button>
+        <button onclick="changeDirection('Right')">➡️</button>
+    </div>
+    <button onclick="initializeGame()" style="margin-top: 20px; padding: 10px 20px; font-size: 18px; background: red; color: white; border: none; cursor: pointer;">Reset Game</button>
+    
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        let snake, food, dx, dy, score, gameInterval, gameSpeed;
+        const winningScore = 30;
+        let gameStarted = false;
+        
+        function initializeGame() {
+            clearInterval(gameInterval);
+            snake = [{x: 200, y: 200}];
+            food = {x: 100, y: 100};
+            dx = 0; dy = 0;
+            score = 0;
+            gameSpeed = 200;
+            gameStarted = false;
+            document.getElementById("score").innerText = "Score: 0";
+            document.getElementById("code").style.display = "none";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawFood();
+            drawSnake();
+        }
+        
+        function drawSnake() {
+            ctx.fillStyle = "lime";
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, 20, 20);
+            });
+        }
+        
+        function drawFood() {
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, 20, 20);
+        }
+        
+        function moveSnake() {
+            if (!gameStarted) return;
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            
+            if (checkCollision(head)) {
+                alert("Game Over!");
+                initializeGame();
+                return;
+            }
+            
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                document.getElementById("score").innerText = "Score: " + score;
+                food = {
+                    x: Math.floor(Math.random() * 20) * 20,
+                    y: Math.floor(Math.random() * 20) * 20
+                };
+                increaseSpeed();
+            } else {
+                snake.pop();
+            }
+        }
+        
+        function checkCollision(head) {
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                return true;
+            }
+            return snake.some(segment => segment.x === head.x && segment.y === head.y);
+        }
+        
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawFood();
+            moveSnake();
+            drawSnake();
+            
+            if (score >= winningScore) {
+                document.getElementById("code").style.display = "block";
+            }
+        }
+        
+        function increaseSpeed() {
+            if (score % 5 === 0 && gameSpeed > 50) {
+                clearInterval(gameInterval);
+                gameSpeed -= 20;
+                gameInterval = setInterval(updateGame, gameSpeed);
+            }
+        }
+        
+        function changeDirection(direction) {
+            if (!gameStarted) {
+                gameStarted = true;
+                gameInterval = setInterval(updateGame, gameSpeed);
+            }
+            if (direction === 'Up' && dy === 0) { dx = 0; dy = -20; }
+            else if (direction === 'Down' && dy === 0) { dx = 0; dy = 20; }
+            else if (direction === 'Left' && dx === 0) { dx = -20; dy = 0; }
+            else if (direction === 'Right' && dx === 0) { dx = 20; dy = 0; }
+        }
+        
+        document.addEventListener("keydown", (event) => {
+            const keyMap = { ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right' };
+            if (keyMap[event.key]) changeDirection(keyMap[event.key]);
+        });
+        
+        initializeGame();
+    </script>
+</body>
+</html>
