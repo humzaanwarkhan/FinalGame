@@ -78,7 +78,7 @@
 </head>
 <body>
     <h1>THE ESCAPE ROOM : FINAL ROUND  </h1>
-    <h2>Score 30 points, and get a reward!!</h2>
+    <h2>Score 25 points, and get a reward!!</h2>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
     <h2 id="score">Score: 0</h2>
     <h2 id="code">Secret Code: 906</h2>
@@ -98,7 +98,7 @@
         const ctx = canvas.getContext("2d");
         
         let snake, food, dx, dy, score, gameInterval, gameSpeed;
-        const winningScore = 30;
+        const winningScore = 25;
         let gameStarted = false;
         
         function initializeGame() {
@@ -107,7 +107,7 @@
             food = {x: 100, y: 100};
             dx = 0; dy = 0;
             score = 0;
-            gameSpeed = 200;
+            gameSpeed = 150;
             gameStarted = false;
             document.getElementById("score").innerText = "Score: 0";
             document.getElementById("code").style.display = "none";
